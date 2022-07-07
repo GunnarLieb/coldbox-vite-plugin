@@ -37,21 +37,18 @@ import coldbox from "coldbox-vite-plugin";
 // import vue from "@vitejs/plugin-vue";
 
 export default defineConfig({
-    plugins: [
-        coldbox([
-            "resources/assets/css/app.css",
-            "resources/assets/js/app.js",
-        ]),
-        // react(),
-        // vue({
-        //     template: {
-        //         transformAssetUrls: {
-        //             base: null,
-        //             includeAbsolute: false,
-        //         },
-        //     },
-        // }),
-    ],
+	plugins: [
+		coldbox(["resources/assets/css/app.css", "resources/assets/js/app.js"]),
+		// react(),
+		// vue({
+		//     template: {
+		//         transformAssetUrls: {
+		//             base: null,
+		//             includeAbsolute: false,
+		//         },
+		//     },
+		// }),
+	],
 });
 ```
 
@@ -63,17 +60,14 @@ If you are migrating aliases from your ColdBox Elixir's `webpack.config.js` file
 
 ```js
 export default defineConfig({
-    plugins: [
-        coldbox([
-            "resources/assets/css/app.css",
-            "resources/assets/js/app.js",
-        ]),
-    ],
-    resolve: {
-        alias: {
-            "@": "/resources/assets/js"
-        }
-    }
+	plugins: [
+		coldbox(["resources/assets/css/app.css", "resources/assets/js/app.js"]),
+	],
+	resolve: {
+		alias: {
+			"@": "/resources/assets/js",
+		},
+	},
 });
 ```
 
@@ -148,13 +142,12 @@ The entry points should match those used in your `vite.config.js`.
 
 #### React
 
-If you are using React and hot-module replacement, you will need to include an additional directive *before* the `@vite` directive:
+If you are using React and hot-module replacement, you will need to include an additional directive _before_ the `@vite` directive:
 
 TODO: Are we supporting this react thing?
 
 ```html
-@viteReactRefresh
-#vite( "resources/assets/js/app.jsx" )#
+@viteReactRefresh #vite( "resources/assets/js/app.jsx" )#
 ```
 
 This loads a React "refresh runtime" in development mode only, which is required for hot module replacement to work correctly.
@@ -200,11 +193,11 @@ Or, you can create it manually:
 
 ```js
 module.exports = {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  },
-}
+	plugins: {
+		tailwindcss: {},
+		autoprefixer: {},
+	},
+};
 ```
 
 If you are using other PostCSS plugins, such as `postcss-import`, you will need to include them in your configuration.
@@ -230,16 +223,16 @@ rm webpack.ssr.mix.js
 In most cases, you won't need a dedicated SSR configuration file when using Vite. You can specify your SSR entry point by passing a configuration option to the Laravel plugin:
 
 ```js
-import { defineConfig } from 'vite';
-import laravel from 'laravel-vite-plugin';
+import { defineConfig } from "vite";
+import laravel from "laravel-vite-plugin";
 
 export default defineConfig({
-    plugins: [
-        laravel({
-            input: 'resources/js/app.js',
-            ssr: 'resources/js/ssr.js',
-        }),
-    ],
+	plugins: [
+		laravel({
+			input: "resources/js/app.js",
+			ssr: "resources/js/ssr.js",
+		}),
+	],
 });
 ```
 

@@ -18,6 +18,7 @@ TODO: Write gitbook and link it here.
 ## Contributing
 
 Thank you for considering contributing to the ColdBox Vite plugin!
+
 ## License
 
 The ColdBox Vite plugin is open-sourced software licensed under the [MIT license](LICENSE.md).
