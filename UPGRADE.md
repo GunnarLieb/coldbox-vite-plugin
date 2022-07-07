@@ -37,18 +37,18 @@ import coldbox from "coldbox-vite-plugin";
 // import vue from "@vitejs/plugin-vue";
 
 export default defineConfig({
-	plugins: [
-		coldbox(["resources/assets/css/app.css", "resources/assets/js/app.js"]),
-		// react(),
-		// vue({
-		//     template: {
-		//         transformAssetUrls: {
-		//             base: null,
-		//             includeAbsolute: false,
-		//         },
-		//     },
-		// }),
-	],
+    plugins: [
+        coldbox(["resources/assets/css/app.css", "resources/assets/js/app.js"]),
+        // react(),
+        // vue({
+        //     template: {
+        //         transformAssetUrls: {
+        //             base: null,
+        //             includeAbsolute: false,
+        //         },
+        //     },
+        // }),
+    ],
 });
 ```
 
@@ -60,14 +60,14 @@ If you are migrating aliases from your ColdBox Elixir's `webpack.config.js` file
 
 ```js
 export default defineConfig({
-	plugins: [
-		coldbox(["resources/assets/css/app.css", "resources/assets/js/app.js"]),
-	],
-	resolve: {
-		alias: {
-			"@": "/resources/assets/js",
-		},
-	},
+    plugins: [
+        coldbox(["resources/assets/css/app.css", "resources/assets/js/app.js"]),
+    ],
+    resolve: {
+        alias: {
+            "@": "/resources/assets/js",
+        },
+    },
 });
 ```
 
@@ -193,10 +193,10 @@ Or, you can create it manually:
 
 ```js
 module.exports = {
-	plugins: {
-		tailwindcss: {},
-		autoprefixer: {},
-	},
+    plugins: {
+        tailwindcss: {},
+        autoprefixer: {},
+    },
 };
 ```
 
@@ -227,12 +227,12 @@ import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
 
 export default defineConfig({
-	plugins: [
-		laravel({
-			input: "resources/js/app.js",
-			ssr: "resources/js/ssr.js",
-		}),
-	],
+    plugins: [
+        laravel({
+            input: "resources/js/app.js",
+            ssr: "resources/js/ssr.js",
+        }),
+    ],
 });
 ```
 
