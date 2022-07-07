@@ -1,19 +1,19 @@
 {
-    "name": "laravel-vite-plugin",
-    "version": "0.3.0",
-    "description": "Laravel plugin for Vite.",
+    "name": "coldbox-vite-plugin",
+    "version": "0.1.0",
+    "description": "ColdBox plugin for Vite.",
     "keywords": [
-        "laravel",
+        "coldbox",
         "vite",
         "vite-plugin"
     ],
-    "homepage": "https://github.com/laravel/vite-plugin",
+    "homepage": "https://github.com/ColdBox/coldbox-vite-plugin",
     "repository": {
         "type": "git",
-        "url": "https://github.com/laravel/vite-plugin"
+        "url": "https://github.com/ColdBox/coldbox-vite-plugin"
     },
     "license": "MIT",
-    "author": "Laravel",
+    "author": "Eric Peterson <eric@elpete.com>",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
@@ -34,6 +34,7 @@
         "@typescript-eslint/parser": "^5.21.0",
         "eslint": "^8.14.0",
         "picocolors": "^1.0.0",
+        "prettier": "2.7.1",
         "typescript": "^4.6.4",
         "vite": "^2.9.6",
         "vitest": "^0.12.4"

@@ -12,9 +12,9 @@ interface PluginConfig {
     input: string|string[]
 
     /**
-     * Laravel's public directory.
+     * ColdBox's public directory.
      *
-     * @default 'public'
+     * @default 'includes'
      */
     publicDirectory?: string
 
@@ -33,7 +33,7 @@ interface PluginConfig {
     /**
      * The directory where the SSR bundle should be written.
      *
-     * @default 'storage/ssr'
+     * @default 'includes/build/ssr'
      */
     ssrOutputDirectory?: string
 
@@ -51,7 +51,7 @@ interface RefreshConfig {
     config?: FullReloadConfig,
 }
 
-interface LaravelPlugin extends Plugin {
+interface ColdBoxPlugin extends Plugin {
     config: (config: UserConfig, env: ConfigEnv) => UserConfig
 }
 
@@ -60,21 +60,21 @@ type DevServerUrl = `${'http'|'https'}://${string}:${number}`
 let exitHandlersBound = false
 
 export const refreshPaths = [
-    'app/View/Components/**',
-    'resources/views/**',
-    'routes/**',
+    'layouts/**',
+    'views/**',
+    'config/Router.cfc',
 ]
 
 /**
- * Laravel plugin for Vite.
+ * ColdBox plugin for Vite.
  *
  * @param config - A config object or relative path(s) of the scripts to be compiled.
  */
-export default function laravel(config: string|string[]|PluginConfig): [LaravelPlugin, ...Plugin[]]  {
+export default function coldbox(config: string|string[]|PluginConfig): [ColdBoxPlugin, ...Plugin[]]  {
     const pluginConfig = resolvePluginConfig(config)
 
     return [
-        resolveLaravelPlugin(pluginConfig),
+        resolveColdBoxPlugin(pluginConfig),
         ...resolveFullReloadConfig(pluginConfig) as Plugin[],
     ];
 }
@@ -82,17 +82,17 @@ export default function laravel(config: string|string[]|PluginConfig): [LaravelP
 /**
  * Resolve the Laravel Plugin configuration.
  */
-function resolveLaravelPlugin(pluginConfig: Required<PluginConfig>): LaravelPlugin {
+function resolveColdBoxPlugin(pluginConfig: Required<PluginConfig>): ColdBoxPlugin {
     let viteDevServerUrl: DevServerUrl
     let resolvedConfig: ResolvedConfig
     const cssManifest: Manifest = {}
 
     const defaultAliases: Record<string, string> = {
-        '@': '/resources/js',
+        '@': '/resources/assets/js',
     };
 
     return {
-        name: 'laravel',
+        name: 'coldbox',
         enforce: 'post',
         config: (userConfig, { command, mode }) => {
             const ssr = !! userConfig.build?.ssr
@@ -110,12 +110,7 @@ function resolveLaravelPlugin(pluginConfig: Required<PluginConfig>): LaravelPlug
                     },
                 },
                 server: {
-                    origin: '__laravel_vite_placeholder__',
-                    ...(process.env.LARAVEL_SAIL ? {
-                        host: userConfig.server?.host ?? '0.0.0.0',
-                        port: userConfig.server?.port ?? (env.VITE_PORT ? parseInt(env.VITE_PORT) : 5173),
-                        strictPort: userConfig.server?.strictPort ?? true,
-                    } : undefined)
+                    origin: '__coldbox_vite_placeholder__'
                 },
                 resolve: {
                     alias: Array.isArray(userConfig.resolve?.alias)
@@ -141,13 +136,14 @@ function resolveLaravelPlugin(pluginConfig: Required<PluginConfig>): LaravelPlug
         },
         transform(code) {
             if (resolvedConfig.command === 'serve') {
-                return code.replace(/__laravel_vite_placeholder__/g, viteDevServerUrl)
+                return code.replace(/__coldbox_vite_placeholder__/g, viteDevServerUrl)
             }
         },
         configureServer(server) {
             const hotFile = path.join(pluginConfig.publicDirectory, 'hot')
 
             const envDir = resolvedConfig.envDir || process.cwd()
+			// TODO: what is ColdBox's version of this?
             const appUrl = loadEnv('', envDir, 'APP_URL').APP_URL
 
             server.httpServer?.once('listening', () => {
@@ -159,7 +155,7 @@ function resolveLaravelPlugin(pluginConfig: Required<PluginConfig>): LaravelPlug
                     fs.writeFileSync(hotFile, viteDevServerUrl)
 
                     setTimeout(() => {
-                        server.config.logger.info(colors.red(`\n  Laravel ${laravelVersion()} `))
+                        server.config.logger.info(colors.red(`\n  ColdBox ${coldboxVersion()} `))
                         server.config.logger.info(`\n  > APP_URL: ` + colors.cyan(appUrl))
                     })
                 }
@@ -186,7 +182,7 @@ function resolveLaravelPlugin(pluginConfig: Required<PluginConfig>): LaravelPlug
                 if (req.url === '/index.html') {
                     server.config.logger.warn(
                         "\n" + colors.bgYellow(
-                            colors.black(`The Vite server should not be accessed directly. Your Laravel application's configured APP_URL is: ${appUrl}`)
+                            colors.black(`The Vite server should not be accessed directly. Your ColdBox application's configured APP_URL is: ${appUrl}`)
                         )
                     )
 
@@ -201,7 +197,7 @@ function resolveLaravelPlugin(pluginConfig: Required<PluginConfig>): LaravelPlug
             })
         },
 
-        // The following two hooks are a workaround to help solve a "flash of unstyled content" with Blade.
+        // The following two hooks are a workaround to help solve a "flash of unstyled content".
         // They add any CSS entry points into the manifest because Vite does not currently do this.
         renderChunk(_, chunk) {
             const cssLangs = `\\.(css|less|sass|scss|styl|stylus|pcss|postcss)($|\\?)`
@@ -250,11 +246,11 @@ function resolveLaravelPlugin(pluginConfig: Required<PluginConfig>): LaravelPlug
 /**
  * The version of Laravel being run.
  */
-function laravelVersion(): string {
+function coldboxVersion(): string {
     try {
-        const composer = JSON.parse(fs.readFileSync('composer.lock').toString())
+        const boxJSON = JSON.parse(fs.readFileSync('box.json').toString())
 
-        return composer.packages?.find((composerPackage: {name: string}) => composerPackage.name === 'laravel/framework')?.version ?? ''
+        return boxJSON.dependencies?.coldbox ?? ''
     } catch {
         return ''
     }
@@ -265,7 +261,7 @@ function laravelVersion(): string {
  */
 function resolvePluginConfig(config: string|string[]|PluginConfig): Required<PluginConfig> {
     if (typeof config === 'undefined') {
-        throw new Error('laravel-vite-plugin: missing configuration.')
+        throw new Error('coldbox-vite-plugin: missing configuration.')
     }
 
     if (typeof config === 'string' || Array.isArray(config)) {
@@ -273,14 +269,14 @@ function resolvePluginConfig(config: string|string[]|PluginConfig): Required<Plu
     }
 
     if (typeof config.input === 'undefined') {
-        throw new Error('laravel-vite-plugin: missing configuration for "input".')
+        throw new Error('coldbox-vite-plugin: missing configuration for "input".')
     }
 
     if (typeof config.publicDirectory === 'string') {
         config.publicDirectory = config.publicDirectory.trim().replace(/^\/+/, '')
 
         if (config.publicDirectory === '') {
-            throw new Error('laravel-vite-plugin: publicDirectory must be a subdirectory. E.g. \'public\'.')
+            throw new Error('coldbox-vite-plugin: publicDirectory must be a subdirectory. E.g. \'includes\'.')
         }
     }
 
@@ -288,7 +284,7 @@ function resolvePluginConfig(config: string|string[]|PluginConfig): Required<Plu
         config.buildDirectory = config.buildDirectory.trim().replace(/^\/+/, '').replace(/\/+$/, '')
 
         if (config.buildDirectory === '') {
-            throw new Error('laravel-vite-plugin: buildDirectory must be a subdirectory. E.g. \'build\'.')
+            throw new Error('coldbox-vite-plugin: buildDirectory must be a subdirectory. E.g. \'build\'.')
         }
     }
 
@@ -302,10 +298,10 @@ function resolvePluginConfig(config: string|string[]|PluginConfig): Required<Plu
 
     return {
         input: config.input,
-        publicDirectory: config.publicDirectory ?? 'public',
+        publicDirectory: config.publicDirectory ?? 'includes',
         buildDirectory: config.buildDirectory ?? 'build',
         ssr: config.ssr ?? config.input,
-        ssrOutputDirectory: config.ssrOutputDirectory ?? 'storage/ssr',
+        ssrOutputDirectory: config.ssrOutputDirectory ?? 'includes/build/ssr',
         refresh: config.refresh ?? false,
     }
 }
@@ -381,7 +377,7 @@ function resolveFullReloadConfig({ refresh: config }: Required<PluginConfig>): P
 
         /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
         /** @ts-ignore */
-        plugin.__laravel_plugin_config = c
+        plugin.__coldbox_plugin_config = c
 
         return plugin
     })
@@ -413,7 +409,7 @@ function noExternalInertiaHelpers(config: UserConfig): true|Array<string|RegExp>
     /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
     /* @ts-ignore */
     const userNoExternal = (config.ssr as SSROptions|undefined)?.noExternal
-    const pluginNoExternal = ['laravel-vite-plugin']
+    const pluginNoExternal = ['coldbox-vite-plugin']
 
     if (userNoExternal === true) {
         return true
