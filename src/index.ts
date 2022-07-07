@@ -242,7 +242,7 @@ function resolveColdBoxPlugin(
 
         // The following two hooks are a workaround to help solve a "flash of unstyled content".
         // They add any CSS entry points into the manifest because Vite does not currently do this.
-        renderChunk(_, chunk) {
+        renderChunk(_, chunk : any) {
             const cssLangs = `\\.(css|less|sass|scss|styl|stylus|pcss|postcss)($|\\?)`;
             const cssLangRE = new RegExp(cssLangs);
 
