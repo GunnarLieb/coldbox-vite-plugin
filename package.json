@@ -26,7 +26,6 @@
             "node": "./inertia-helpers/index.js"
         }
     },
-    "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
         "/dist",
