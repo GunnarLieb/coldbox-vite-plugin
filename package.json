@@ -1,6 +1,6 @@
 {
     "name": "coldbox-vite-plugin",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "ColdBox plugin for Vite.",
     "keywords": [
         "coldbox",
