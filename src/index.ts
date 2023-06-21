@@ -179,6 +179,8 @@ function resolveColdBoxPlugin(
                         address,
                         server.config
                     );
+
+                    fs.mkdirSync(path.dirname(hotFile), { recursive: true });
                     fs.writeFileSync(hotFile, viteDevServerUrl);
 
                     setTimeout(() => {
@@ -295,6 +297,7 @@ function resolveColdBoxPlugin(
                 ...manifest,
                 ...cssManifest,
             };
+            fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
             fs.writeFileSync(
                 manifestPath,
                 JSON.stringify(newManifest, null, 2)
