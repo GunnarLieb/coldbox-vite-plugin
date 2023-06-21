@@ -90,7 +90,7 @@ export default function coldbox(
 }
 
 /**
- * Resolve the Laravel Plugin configuration.
+ * Resolve the ColdBox Plugin configuration.
  */
 function resolveColdBoxPlugin(
     pluginConfig: Required<PluginConfig>
@@ -164,9 +164,7 @@ function resolveColdBoxPlugin(
         configureServer(server) {
             const hotFile = path.join(pluginConfig.publicDirectory, "hot");
 
-            const envDir = resolvedConfig.envDir || process.cwd();
-            // TODO: what is ColdBox's version of this?
-            const appUrl = loadEnv("", envDir, "APP_URL").APP_URL;
+            const pluginVersion = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../package.json")).toString()).version;
 
             server.httpServer?.once("listening", () => {
                 const address = server.httpServer?.address();
@@ -188,9 +186,9 @@ function resolveColdBoxPlugin(
                             colors.red(`\n  ColdBox ${coldboxVersion()} `)
                         );
                         server.config.logger.info(
-                            `\n  > APP_URL: ` + colors.cyan(appUrl)
+                            `\n  > Plugin Version: ` + colors.cyan(pluginVersion)
                         );
-                    });
+                    }, 300);
                 }
             });
 
@@ -218,7 +216,7 @@ function resolveColdBoxPlugin(
                             "\n" +
                                 colors.bgYellow(
                                     colors.black(
-                                        `The Vite server should not be accessed directly. Your ColdBox application's configured APP_URL is: ${appUrl}`
+                                        "The Vite server should not be accessed directly. Please access your ColdBox application directly."
                                     )
                                 )
                         );
@@ -234,7 +232,6 @@ function resolveColdBoxPlugin(
                                     )
                                 )
                                 .toString()
-                                .replace(/{{ APP_URL }}/g, appUrl)
                         );
                     }
 
@@ -307,13 +304,15 @@ function resolveColdBoxPlugin(
 }
 
 /**
- * The version of Laravel being run.
+ * The version of ColdBox being run.
  */
 function coldboxVersion(): string {
     try {
         const boxJSON = JSON.parse(fs.readFileSync("box.json").toString());
+        const coldBoxInstallPath = boxJSON.installPaths?.coldbox ?? {};
+        const coldBoxBoxJSON = JSON.parse(fs.readFileSync(path.join(coldBoxInstallPath, "box.json")).toString());
 
-        return boxJSON.dependencies?.coldbox ?? "";
+        return coldBoxBoxJSON.version ?? "";
     } catch {
         return "";
     }
