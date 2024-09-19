@@ -1,7 +1,8 @@
 import fs from "fs";
-import { AddressInfo } from "net";
 import path from "path";
 import colors from "picocolors";
+import { fileURLToPath } from 'url';
+import { AddressInfo } from "net";
 import {
     Plugin,
     loadEnv,
@@ -16,6 +17,9 @@ import {
 import fullReload, {
     Config as FullReloadConfig,
 } from "vite-plugin-full-reload";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 interface PluginConfig {
     /**
