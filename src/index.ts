@@ -317,7 +317,7 @@ function pluginVersion(): string {
  */
 function resolvePluginConfig(config: string|string[]|PluginConfig): Required<PluginConfig> {
     if (typeof config === 'undefined') {
-        throw new Error('laravel-vite-plugin: missing configuration.')
+        throw new Error('coldbox-vite-plugin: missing configuration.')
     }
 
     if (typeof config === 'string' || Array.isArray(config)) {
@@ -325,14 +325,14 @@ function resolvePluginConfig(config: string|string[]|PluginConfig): Required<Plu
     }
 
     if (typeof config.input === 'undefined') {
-        throw new Error('laravel-vite-plugin: missing configuration for "input".')
+        throw new Error('coldbox-vite-plugin: missing configuration for "input".')
     }
 
     if (typeof config.publicDirectory === 'string') {
         config.publicDirectory = config.publicDirectory.trim().replace(/^\/+/, '')
 
         if (config.publicDirectory === '') {
-            throw new Error('laravel-vite-plugin: publicDirectory must be a subdirectory. E.g. \'public\'.')
+            throw new Error('coldbox-vite-plugin: publicDirectory must be a subdirectory. E.g. \'public\'.')
         }
     }
 
@@ -340,7 +340,7 @@ function resolvePluginConfig(config: string|string[]|PluginConfig): Required<Plu
         config.buildDirectory = config.buildDirectory.trim().replace(/^\/+/, '').replace(/\/+$/, '')
 
         if (config.buildDirectory === '') {
-            throw new Error('laravel-vite-plugin: buildDirectory must be a subdirectory. E.g. \'build\'.')
+            throw new Error('coldbox-vite-plugin: buildDirectory must be a subdirectory. E.g. \'build\'.')
         }
     }
 
@@ -462,7 +462,7 @@ function noExternalInertiaHelpers(config: UserConfig): true|Array<string|RegExp>
     /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
     /* @ts-ignore */
     const userNoExternal = (config.ssr as SSROptions|undefined)?.noExternal
-    const pluginNoExternal = ['laravel-vite-plugin']
+    const pluginNoExternal = ['coldbox-vite-plugin']
 
     if (userNoExternal === true) {
         return true

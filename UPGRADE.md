@@ -224,7 +224,7 @@ In most cases, you won't need a dedicated SSR configuration file when using Vite
 
 ```js
 import { defineConfig } from "vite";
-import laravel from "laravel-vite-plugin";
+import laravel from "coldbox-vite-plugin";
 
 export default defineConfig({
     plugins: [
