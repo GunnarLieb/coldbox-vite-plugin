@@ -15,7 +15,7 @@ interface PluginConfig {
     input: InputOption
 
     /**
-     * Laravel's public directory.
+     * ColdBox's public directory.
      *
      * @default 'public'
      */
@@ -81,7 +81,7 @@ interface RefreshConfig {
     config?: FullReloadConfig,
 }
 
-interface LaravelPlugin extends Plugin {
+interface ColdBoxPlugin extends Plugin {
     config: (config: UserConfig, env: ConfigEnv) => UserConfig
 }
 
@@ -99,23 +99,23 @@ export const refreshPaths = [
 ].filter(path => fs.existsSync(path.replace(/\*\*$/, '')))
 
 /**
- * Laravel plugin for Vite.
+ * ColdBox plugin for Vite.
  *
  * @param config - A config object or relative path(s) of the scripts to be compiled.
  */
-export default function laravel(config: string|string[]|PluginConfig): [LaravelPlugin, ...Plugin[]]  {
+export default function coldbox(config: string|string[]|PluginConfig): [ColdBoxPlugin, ...Plugin[]]  {
     const pluginConfig = resolvePluginConfig(config)
 
     return [
-        resolveLaravelPlugin(pluginConfig),
+        resolveColdBoxPlugin(pluginConfig),
         ...resolveFullReloadConfig(pluginConfig) as Plugin[],
     ];
 }
 
 /**
- * Resolve the Laravel Plugin configuration.
+ * Resolve the ColdBox Plugin configuration.
  */
-function resolveLaravelPlugin(pluginConfig: Required<PluginConfig>): LaravelPlugin {
+function resolveColdBoxPlugin(pluginConfig: Required<PluginConfig>): ColdBoxPlugin {
     let viteDevServerUrl: DevServerUrl
     let resolvedConfig: ResolvedConfig
     let userConfig: UserConfig
@@ -159,7 +159,7 @@ function resolveLaravelPlugin(pluginConfig: Required<PluginConfig>): LaravelPlug
                             /^https?:\/\/.*\.test(:\d+)?$/,                                         // Valet / Herd    (SCHEME://*.test:PORT)
                         ],
                     },
-                    ...(process.env.LARAVEL_SAIL ? {
+                    ...(process.env.COLDBOX_SAIL ? {
                         host: userConfig.server?.host ?? '0.0.0.0',
                         port: userConfig.server?.port ?? (env.VITE_PORT ? parseInt(env.VITE_PORT) : 5173),
                         strictPort: userConfig.server?.strictPort ?? true,
@@ -216,7 +216,7 @@ function resolveLaravelPlugin(pluginConfig: Required<PluginConfig>): LaravelPlug
                     fs.writeFileSync(pluginConfig.hotFile, `${viteDevServerUrl}${server.config.base.replace(/\/$/, '')}`)
 
                     setTimeout(() => {
-                        server.config.logger.info(`\n  ${colors.red(`${colors.bold('LARAVEL')} ${laravelVersion()}`)}  ${colors.dim('plugin')} ${colors.bold(`v${pluginVersion()}`)}`)
+                        server.config.logger.info(`\n  ${colors.red(`${colors.bold('Coldbox')} ${coldboxVersion()}`)}  ${colors.dim('plugin')} ${colors.bold(`v${pluginVersion()}`)}`)
                         server.config.logger.info('')
                         server.config.logger.info(`  ${colors.green('➜')}  ${colors.bold('APP_URL')}: ${colors.cyan(appUrl.replace(/:(\d+)/, (_, port) => `:${colors.bold(port)}`))}`)
 
@@ -267,42 +267,34 @@ function resolveLaravelPlugin(pluginConfig: Required<PluginConfig>): LaravelPlug
  * Validate the command can run in the given environment.
  */
 function ensureCommandShouldRunInEnvironment(command: 'build'|'serve', env: Record<string, string>): void {
-    if (command === 'build' || env.LARAVEL_BYPASS_ENV_CHECK === '1') {
+    if (command === 'build' || env.COLDBOX_BYPASS_ENV_CHECK === '1') {
         return;
     }
 
-    if (typeof env.LARAVEL_VAPOR !== 'undefined') {
-        throw Error('You should not run the Vite HMR server on Vapor. You should build your assets for production instead. To disable this ENV check you may set LARAVEL_BYPASS_ENV_CHECK=1');
-    }
-
-    if (typeof env.LARAVEL_FORGE !== 'undefined') {
-        throw Error('You should not run the Vite HMR server in your Forge deployment script. You should build your assets for production instead. To disable this ENV check you may set LARAVEL_BYPASS_ENV_CHECK=1');
-    }
-
-    if (typeof env.LARAVEL_ENVOYER !== 'undefined') {
-        throw Error('You should not run the Vite HMR server in your Envoyer hook. You should build your assets for production instead. To disable this ENV check you may set LARAVEL_BYPASS_ENV_CHECK=1')
-    }
-
     if (typeof env.CI !== 'undefined') {
-        throw Error('You should not run the Vite HMR server in CI environments. You should build your assets for production instead. To disable this ENV check you may set LARAVEL_BYPASS_ENV_CHECK=1')
+        throw Error('You should not run the Vite HMR server in CI environments. You should build your assets for production instead. To disable this ENV check you may set COLDBOX_BYPASS_ENV_CHECK=1')
     }
 }
 
 /**
- * The version of Laravel being run.
+ * The version of ColdBox being run.
  */
-function laravelVersion(): string {
+function coldboxVersion(): string {
     try {
-        const composer = JSON.parse(fs.readFileSync('composer.lock').toString())
+        const boxJSON = JSON.parse(fs.readFileSync("box.json").toString())
+        const coldBoxInstallPath = boxJSON.installPaths?.coldbox ?? {}
 
-        return composer.packages?.find((composerPackage: {name: string}) => composerPackage.name === 'laravel/framework')?.version ?? ''
+
+        const coldBoxBoxJSON = JSON.parse(fs.readFileSync(path.join(coldBoxInstallPath, "box.json")).toString())
+
+        return coldBoxBoxJSON.version ?? "";    
     } catch {
         return ''
     }
 }
 
 /**
- * The version of the Laravel Vite plugin being run.
+ * The version of the ColdBox Vite plugin being run.
  */
 function pluginVersion(): string {
     try {
@@ -417,7 +409,7 @@ function resolveFullReloadConfig({ refresh: config }: Required<PluginConfig>): P
 
         /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
         /** @ts-ignore */
-        plugin.__laravel_plugin_config = c
+        plugin.__coldbox_plugin_config = c
 
         return plugin
     })
@@ -434,7 +426,7 @@ function resolveDevServerUrl(address: AddressInfo, config: ResolvedConfig, userC
 
     const configHmrHost = typeof config.server.hmr === 'object' ? config.server.hmr.host : null
     const configHost = typeof config.server.host === 'string' ? config.server.host : null
-    const sailHost = process.env.LARAVEL_SAIL && ! userConfig.server?.host ? 'localhost' : null
+    const sailHost = process.env.COLDBOX_SAIL && ! userConfig.server?.host ? 'localhost' : null
     const serverAddress = isIpv6(address) ? `[${address.address}]` : address.address
     const host = configHmrHost ?? sailHost ?? configHost ?? serverAddress
 
@@ -447,7 +439,7 @@ function resolveDevServerUrl(address: AddressInfo, config: ResolvedConfig, userC
 function isIpv6(address: AddressInfo): boolean {
     return address.family === 'IPv6'
         // In node >=18.0 <18.4 this was an integer value. This was changed in a minor version.
-        // See: https://github.com/laravel/vite-plugin/issues/103
+        // See: https://github.com/coldbox/vite-plugin/issues/103
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore-next-line
         || address.family === 6;

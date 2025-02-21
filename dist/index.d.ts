@@ -7,7 +7,7 @@ interface PluginConfig {
      */
     input: InputOption;
     /**
-     * Laravel's public directory.
+     * ColdBox's public directory.
      *
      * @default 'public'
      */
@@ -63,15 +63,15 @@ interface RefreshConfig {
     paths: string[];
     config?: FullReloadConfig;
 }
-interface LaravelPlugin extends Plugin {
+interface ColdBoxPlugin extends Plugin {
     config: (config: UserConfig, env: ConfigEnv) => UserConfig;
 }
 type DevServerUrl = `${'http' | 'https'}://${string}:${number}`;
 export declare const refreshPaths: string[];
 /**
- * Laravel plugin for Vite.
+ * ColdBox plugin for Vite.
  *
  * @param config - A config object or relative path(s) of the scripts to be compiled.
  */
-export default function laravel(config: string | string[] | PluginConfig): [LaravelPlugin, ...Plugin[]];
+export default function coldbox(config: string | string[] | PluginConfig): [ColdBoxPlugin, ...Plugin[]];
 export {};

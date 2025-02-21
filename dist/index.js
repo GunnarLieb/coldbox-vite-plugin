@@ -14,14 +14,14 @@ const refreshPaths = [
   "resources/views/**",
   "routes/**"
 ].filter((path2) => fs.existsSync(path2.replace(/\*\*$/, "")));
-function laravel(config) {
+function coldbox(config) {
   const pluginConfig = resolvePluginConfig(config);
   return [
-    resolveLaravelPlugin(pluginConfig),
+    resolveColdBoxPlugin(pluginConfig),
     ...resolveFullReloadConfig(pluginConfig)
   ];
 }
-function resolveLaravelPlugin(pluginConfig) {
+function resolveColdBoxPlugin(pluginConfig) {
   let viteDevServerUrl;
   let resolvedConfig;
   let userConfig;
@@ -59,7 +59,7 @@ function resolveLaravelPlugin(pluginConfig) {
               /^https?:\/\/.*\.test(:\d+)?$/
             ]
           },
-          ...process.env.LARAVEL_SAIL ? {
+          ...process.env.COLDBOX_SAIL ? {
             host: userConfig.server?.host ?? "0.0.0.0",
             port: userConfig.server?.port ?? (env.VITE_PORT ? parseInt(env.VITE_PORT) : 5173),
             strictPort: userConfig.server?.strictPort ?? true
@@ -110,7 +110,7 @@ function resolveLaravelPlugin(pluginConfig) {
           fs.writeFileSync(pluginConfig.hotFile, `${viteDevServerUrl}${server.config.base.replace(/\/$/, "")}`);
           setTimeout(() => {
             server.config.logger.info(`
-  ${colors.red(`${colors.bold("LARAVEL")} ${laravelVersion()}`)}  ${colors.dim("plugin")} ${colors.bold(`v${pluginVersion()}`)}`);
+  ${colors.red(`${colors.bold("Coldbox")} ${coldboxVersion()}`)}  ${colors.dim("plugin")} ${colors.bold(`v${pluginVersion()}`)}`);
             server.config.logger.info("");
             server.config.logger.info(`  ${colors.green("\u279C")}  ${colors.bold("APP_URL")}: ${colors.cyan(appUrl.replace(/:(\d+)/, (_, port) => `:${colors.bold(port)}`))}`);
             if (typeof resolvedConfig.server.https === "object" && typeof resolvedConfig.server.https.key === "string") {
@@ -149,26 +149,19 @@ function resolveLaravelPlugin(pluginConfig) {
   };
 }
 function ensureCommandShouldRunInEnvironment(command, env) {
-  if (command === "build" || env.LARAVEL_BYPASS_ENV_CHECK === "1") {
+  if (command === "build" || env.COLDBOX_BYPASS_ENV_CHECK === "1") {
     return;
   }
-  if (typeof env.LARAVEL_VAPOR !== "undefined") {
-    throw Error("You should not run the Vite HMR server on Vapor. You should build your assets for production instead. To disable this ENV check you may set LARAVEL_BYPASS_ENV_CHECK=1");
-  }
-  if (typeof env.LARAVEL_FORGE !== "undefined") {
-    throw Error("You should not run the Vite HMR server in your Forge deployment script. You should build your assets for production instead. To disable this ENV check you may set LARAVEL_BYPASS_ENV_CHECK=1");
-  }
-  if (typeof env.LARAVEL_ENVOYER !== "undefined") {
-    throw Error("You should not run the Vite HMR server in your Envoyer hook. You should build your assets for production instead. To disable this ENV check you may set LARAVEL_BYPASS_ENV_CHECK=1");
-  }
   if (typeof env.CI !== "undefined") {
-    throw Error("You should not run the Vite HMR server in CI environments. You should build your assets for production instead. To disable this ENV check you may set LARAVEL_BYPASS_ENV_CHECK=1");
+    throw Error("You should not run the Vite HMR server in CI environments. You should build your assets for production instead. To disable this ENV check you may set COLDBOX_BYPASS_ENV_CHECK=1");
   }
 }
-function laravelVersion() {
+function coldboxVersion() {
   try {
-    const composer = JSON.parse(fs.readFileSync("composer.lock").toString());
-    return composer.packages?.find((composerPackage) => composerPackage.name === "laravel/framework")?.version ?? "";
+    const boxJSON = JSON.parse(fs.readFileSync("box.json").toString());
+    const coldBoxInstallPath = boxJSON.installPaths?.coldbox ?? {};
+    const coldBoxBoxJSON = JSON.parse(fs.readFileSync(path.join(coldBoxInstallPath, "box.json")).toString());
+    return coldBoxBoxJSON.version ?? "";
   } catch {
     return "";
   }
@@ -251,7 +244,7 @@ function resolveFullReloadConfig({ refresh: config }) {
   }
   return config.flatMap((c) => {
     const plugin = fullReload(c.paths, c.config);
-    plugin.__laravel_plugin_config = c;
+    plugin.__coldbox_plugin_config = c;
     return plugin;
   });
 }
@@ -262,7 +255,7 @@ function resolveDevServerUrl(address, config, userConfig) {
   const protocol = clientProtocol ?? serverProtocol;
   const configHmrHost = typeof config.server.hmr === "object" ? config.server.hmr.host : null;
   const configHost = typeof config.server.host === "string" ? config.server.host : null;
-  const sailHost = process.env.LARAVEL_SAIL && !userConfig.server?.host ? "localhost" : null;
+  const sailHost = process.env.COLDBOX_SAIL && !userConfig.server?.host ? "localhost" : null;
   const serverAddress = isIpv6(address) ? `[${address.address}]` : address.address;
   const host = configHmrHost ?? sailHost ?? configHost ?? serverAddress;
   const configHmrClientPort = typeof config.server.hmr === "object" ? config.server.hmr.clientPort : null;
@@ -386,6 +379,6 @@ function valetLinuxConfigPath() {
   return path.resolve(os.homedir(), ".valet");
 }
 export {
-  laravel as default,
+  coldbox as default,
   refreshPaths
 };
